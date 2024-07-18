@@ -41,16 +41,14 @@ extension PrimerSettings {
                 let rnApplePayIsCaptureShippingAddressEnabled = (rnApplePayOptions["isCaptureShippingAddressEnabled"] as? Bool) ?? false
                 let rnApplePayShowApplePayForUnsupportedDevice = (rnApplePayOptions["showApplePayForUnsupportedDevice"] as? Bool) ?? true
                 let rnApplePayCheckProvidedNetworks = (rnApplePayOptions["checkProvidedNetworks"] as? Bool) ?? true
-                let rnApplePayShippingMethods = mapToPKShippingMethods(rnApplePayOptions["shippingMethods"] as? [[String : Any]])
-
+                
                 applePayOptions = PrimerApplePayOptions(
                     merchantIdentifier: rnApplePayMerchantIdentifier,
                     merchantName: rnApplePayMerchantName,
                     isCaptureBillingAddressEnabled: rnApplePayIsCaptureBillingAddressEnabled,
                     isCaptureShippingAddressEnabled: rnApplePayIsCaptureShippingAddressEnabled,
                     showApplePayForUnsupportedDevice: rnApplePayShowApplePayForUnsupportedDevice,
-                    checkProvidedNetworks: rnApplePayCheckProvidedNetworks,
-                    shippingMethods: rnApplePayShippingMethods)
+                    checkProvidedNetworks: rnApplePayCheckProvidedNetworks)
             }
 
             var klarnaOptions: PrimerKlarnaOptions?
@@ -98,39 +96,5 @@ extension PrimerSettings {
                 uiOptions: uiOptions,
                 debugOptions: debugOptions)
         }
-    }
-
-    func mapToPKShippingMethods(items: [[String: Any]]?) -> [PKShippingMethod] {
-        var shippingMethods: [PKShippingMethod] = []
-        if let items = items {
-            for item in items {
-                let label = item["label"] as? String ?? ""
-                let amount = NSDecimalNumber(string: item["amount"] as? String ?? "")
-                let identifier = item["identifier"] as? String ?? ""
-                let type = (item["type"] as? String ?? "") == "pending" ? PKPaymentSummaryItemType.pending : PKPaymentSummaryItemType.final
-                let detail = item["detail"] as? String ?? ""
-                let shippingMethod = PKShippingMethod(
-                    label: label,
-                    amount: amount,
-                    identifier: identifier,
-                    type: type,
-                    detail: detail
-                )
-                if #available(iOS 15.0, *) {
-                    if let startDate = item["startDate"] as? Double, let endDate = item["endDate"] as? Double {
-                        let startDate = Date(timeIntervalSince1970: startDate)
-                        let endDate = Date(timeIntervalSince1970: endDate)
-                        shippingMethod.dateComponentsRange = PKDateComponentsRange(
-                            start: Calendar.current.dateComponents([.calendar, .year, .month, .day],
-                                                                from: startDate),
-                            end: Calendar.current.dateComponents([.calendar, .year, .month, .day],
-                                                                from: endDate)
-                        )
-                    }
-                }
-                shippingMethods.append(shippingMethod)
-            }
-        }
-        return shippingMethods
     }
 }
